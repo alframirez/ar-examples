@@ -1,11 +1,11 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    .controls {
+    .slider {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 90vh; /* Push the button group to the bottom */
+      margin-top: 80vh; /* Push the button group to the bottom */
     }
 
     model-viewer {
@@ -15,6 +15,79 @@
       height: 96vh; /* Fill the entire viewport height */
       width: 99vw;
     }
+
+    .navbar {
+      background-color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 50px;
+    }
+
+    .navbar .nav-item {
+      margin-right: 10px;
+    }
+
+    .navbar .nav-link {
+      color: white;
+      font-size: 16px;
+      text-decoration: none;
+    }
+
+    .navbar .dropdown-menu {
+      background-color: #333;
+      border-radius: 0;
+      margin-top: 10px;
+    }
+
+    .navbar .dropdown-item {
+      color: white;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .navbar .dropdown-item:hover {
+      background-color: #222;
+    }
+  </style>
+
+  <style>
+    .hotspot {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      border: none;
+      background-color: blue;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    .hotspot[slot="hotspot-visor"] {
+      --min-hotspot-opacity: 0;
+      background-color: green;
+    }
+    .hotspot[slot="hotspot-hand"] {
+      --min-hotspot-opacity: 0;
+      background-color: red;
+    }
+
+    .hotspot[slot="hotspot-foot"] {
+      --min-hotspot-opacity: 0;
+
+      border: 3px solid blue;
+    }
+
+    .annotation {
+      background-color: #888888;
+      position: absolute;
+      transform: translate(10px, 10px);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    /* This keeps child nodes hidden while the element loads */
+    :not(:defined) > * {
+      display: none;
+    }
   </style>
 </head>
 <!-- Import the component -->
@@ -23,28 +96,277 @@
   src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
 ></script>
 <model-viewer
+  src="./assets/Astronaut.glb"
+  poster=""
+  shadow-intensity="1"
+  ar
   camera-controls
   touch-action="pan-y"
-  interaction-prompt="none"
-  id="color"
-  src="./assets/Astronaut.glb"
-  ar
-  alt="A 3D model of an astronaut"
+  alt="A 3D model carousel"
 >
-  <div class="controls" id="color-controls">
-    <button data-color="#ff0000">Red</button>
-    <button data-color="#00ff00">Green</button>
-    <button data-color="#0000ff">Blue</button>
-  </div>
-</model-viewer>
-<script>
-  const modelViewerColor = document.querySelector("model-viewer#color");
+  <nav class="navbar">
+    <div class="dropdown">
+      <select
+        name="camera-options"
+        id="cameraOptions"
+        onchange="showPopup(this)"
+      >
+        <option selected disabled>Camera position</option>
+        <option value="front">frontal</option>
+        <option value="back">atras</option>
+        <option value="top">arriba</option>
+        <option value="bottom">abajo</option>
+      </select>
+    </div>
+  </nav>
+  <button
+    class="hotspot"
+    slot="hotspot-visor"
+    data-position="0 1.75 0.35"
+    data-normal="0 0 5"
+  >
+    <div class="annotation">Header section</div>
+  </button>
 
-  document
-    .querySelector("#color-controls")
-    .addEventListener("click", (event) => {
-      const colorString = event.target.dataset.color;
-      const [material] = modelViewerColor.model.materials;
-      material.pbrMetallicRoughness.setBaseColorFactor(colorString);
+  <button
+    class="hotspot"
+    slot="hotspot-hand"
+    data-position="0 1.75 -0.35"
+    data-normal="0 1.75 -0.35"
+  >
+    <div class="annotation">Back section</div>
+  </button>
+  <button
+    class="hotspot"
+    slot="hotspot-foot"
+    data-position="0.16 -0.2 0.17"
+    data-normal="0.16 -0.2 0.17"
+    data-visibility-attribute="visible"
+  >
+    <div class="annotation">Footer section</div>
+  </button>
+  <button slot="ar-button" id="ar-button">View in your space</button>
+
+  <button id="ar-failure">AR is not tracking!</button>
+
+  <!-- <div class="slider">
+    <div class="slides">
+      <button
+        class="slide selected"
+        onclick="switchSrc(this, 'Astronaut')"
+        style="background-image: url('./assets/Astronaut.png')"
+      ></button
+      ><button
+        class="slide"
+        onclick="switchSrc(this, 'RocketShip')"
+        style="background-image: url('./assets/RocketShip.png')"
+      ></button
+      ><button
+        class="slide"
+        onclick="switchSrc(this, 'MacbethBalls')"
+        style="background-image: url('./assets/MacbethBalls.png')"
+      ></button>
+    </div>
+  </div> -->
+</model-viewer>
+
+<script type="module">
+  const modelViewer = document.querySelector("model-viewer");
+
+  window.switchSrc = (element, name) => {
+    const base = "./assets/" + name;
+    modelViewer.src = base + ".glb";
+    modelViewer.poster = base + ".webp";
+    const slides = document.querySelectorAll(".slide");
+    slides.forEach((element) => {
+      element.classList.remove("selected");
     });
+    element.classList.add("selected");
+  };
+
+  document.querySelector(".slider").addEventListener("beforexrselect", (ev) => {
+    // Keep slider interactions from affecting the XR scene.
+    ev.preventDefault();
+  });
 </script>
+<script>
+  function showPopup(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const selectedValue = selectedOption.value;
+
+    // Create the annotation
+    const annotation = document.createElement("div");
+    annotation.classList.add("annotation");
+    annotation.textContent = `Selected camera position: ${selectedValue}`;
+
+    // Set the annotation's style
+    annotation.style.backgroundColor = "#f00";
+    annotation.style.color = "#fff";
+    annotation.style.fontWeight = "bold";
+    annotation.style.fontSize = "18px";
+
+    // Center the annotation on the screen
+    annotation.style.position = "fixed";
+    annotation.style.top = "50%";
+    annotation.style.left = "50%";
+    annotation.style.transform = "translate(-50%, -50%)";
+
+    // Add the annotation to the DOM
+    document.body.appendChild(annotation);
+    const modelViewer = document.querySelector("model-viewer");
+
+    const position = modelViewer.getPosition();
+
+    // Obtener la posición en el eje X
+    const xPosition = position.x;
+
+    // Obtener la posición en el eje Y
+    const yPosition = position.y;
+
+    // Obtener la posición en el eje Z
+    const zPosition = position.z;
+
+    // Mostrar la posición en los diferentes ejes
+    console.log("x:", xPosition);
+    console.log("y:", yPosition);
+    console.log("z:", zPosition);
+    // Set a timeout to close the annotation after 5 seconds
+    setTimeout(() => {
+      annotation.remove();
+    }, 5000);
+  }
+</script>
+<style>
+  /* This keeps child nodes hidden while the element loads */
+  :not(:defined) > * {
+    display: none;
+  }
+
+  model-viewer {
+    background-color: #eee;
+    overflow-x: hidden;
+  }
+
+  #ar-button {
+    background-image: url(../../assets/ic_view_in_ar_new_googblue_48dp.png);
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    background-position: 12px 50%;
+    background-color: #fff;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    bottom: 132px;
+    padding: 0px 16px 0px 40px;
+    font-family: Roboto Regular, Helvetica Neue, sans-serif;
+    font-size: 14px;
+    color: #4285f4;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 18px;
+    border: 1px solid #dadce0;
+  }
+
+  #ar-button:active {
+    background-color: #e8eaed;
+  }
+
+  #ar-button:focus {
+    outline: none;
+  }
+
+  #ar-button:focus-visible {
+    outline: 1px solid #4285f4;
+  }
+
+  @keyframes circle {
+    from {
+      transform: translateX(-50%) rotate(0deg) translateX(50px) rotate(0deg);
+    }
+    to {
+      transform: translateX(-50%) rotate(360deg) translateX(50px)
+        rotate(-360deg);
+    }
+  }
+
+  @keyframes elongate {
+    from {
+      transform: translateX(100px);
+    }
+    to {
+      transform: translateX(-100px);
+    }
+  }
+
+  model-viewer > #ar-prompt {
+    position: absolute;
+    left: 50%;
+    bottom: 175px;
+    animation: elongate 2s infinite ease-in-out alternate;
+    display: none;
+  }
+
+  model-viewer[ar-status="session-started"] > #ar-prompt {
+    display: block;
+  }
+
+  model-viewer > #ar-prompt > img {
+    animation: circle 4s linear infinite;
+  }
+
+  model-viewer > #ar-failure {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 175px;
+    display: none;
+  }
+
+  model-viewer[ar-tracking="not-tracking"] > #ar-failure {
+    display: block;
+  }
+
+  .slider {
+    width: 100%;
+    text-align: center;
+    overflow: hidden;
+    position: absolute;
+    bottom: 16px;
+  }
+
+  .slides {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .slide {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #fff;
+    margin-right: 10px;
+    border-radius: 10px;
+    border: none;
+    display: flex;
+  }
+
+  .slide.selected {
+    border: 2px solid #4285f4;
+  }
+
+  .slide:focus {
+    outline: none;
+  }
+
+  .slide:focus-visible {
+    outline: 1px solid #4285f4;
+  }
+</style>
