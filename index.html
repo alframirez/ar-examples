@@ -1,5 +1,20 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 90vh; /* Push the button group to the bottom */
+    }
+
+    model-viewer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; /* Fill the entire viewport height */
+    }
+  </style>
 </head>
 <!-- Import the component -->
 <script
@@ -7,6 +22,9 @@
   src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
 ></script>
 <model-viewer
+  camera-controls
+  touch-action="pan-y"
+  interaction-prompt="none"
   id="color"
   src="./assets/Astronaut.glb"
   ar
