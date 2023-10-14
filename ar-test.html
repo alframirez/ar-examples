@@ -1,0 +1,31 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<!-- Import the component -->
+<script
+  type="module"
+  src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
+></script>
+<model-viewer
+  id="color"
+  src="Astronaut.glb"
+  ar
+  alt="A 3D model of an astronaut"
+>
+  <div class="controls" id="color-controls">
+    <button data-color="#ff0000">Red</button>
+    <button data-color="#00ff00">Green</button>
+    <button data-color="#0000ff">Blue</button>
+  </div>
+</model-viewer>
+<script>
+  const modelViewerColor = document.querySelector("model-viewer#color");
+
+  document
+    .querySelector("#color-controls")
+    .addEventListener("click", (event) => {
+      const colorString = event.target.dataset.color;
+      const [material] = modelViewerColor.model.materials;
+      material.pbrMetallicRoughness.setBaseColorFactor(colorString);
+    });
+</script>
