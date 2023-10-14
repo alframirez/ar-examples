@@ -135,6 +135,7 @@
     data-normal="0 1.75 -0.35"
   >
     <div class="annotation">Back section</div>
+    <button class="annotation" onclick="consoletest()">click</button>
   </button>
   <button
     class="hotspot"
@@ -145,6 +146,7 @@
   >
     <div class="annotation">Footer section</div>
   </button>
+  <div id="my-div"></div>
   <button slot="ar-button" id="ar-button">View in your space</button>
 
   <button id="ar-failure">AR is not tracking!</button>
@@ -169,7 +171,7 @@
     </div>
   </div> -->
 </model-viewer>
-
+<button class="" onclick="">click</button>
 <script type="module">
   const modelViewer = document.querySelector("model-viewer");
 
@@ -190,6 +192,27 @@
   });
 </script>
 <script>
+  function consoletest() {
+    console.log("works");
+
+    // Get the div element by ID
+    const div = document.getElementById("my-div");
+
+    // Create the iframe element
+    const iframe = document.createElement("iframe");
+    iframe.width = 560;
+    iframe.height = 315;
+    iframe.src =
+      "https://www.youtube.com/embed/YAPLZ6fL6kM?si=uw77s_Xa-rwFNjCd";
+    iframe.title = "YouTube video player";
+    iframe.frameborder = 0;
+    iframe.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allowfullscreen = true;
+
+    // Append the iframe to the div element
+    div.appendChild(iframe);
+  }
   function showPopup(selectElement) {
     const selectedOption = selectElement.options[selectElement.selectedIndex];
     const selectedValue = selectedOption.value;
